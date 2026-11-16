@@ -186,25 +186,57 @@ codearts run --attach http://127.0.0.1:4096 --password "$CODEARTS_SERVER_PASSWOR
 | `continue_last` | bool | false | 续上一个会话 |
 | `agent` | string | - | 智能体名称（build / plan / 自定义） |
 | `model` | string | - | 模型覆盖 |
-| `format` | enum | json | 输出格式 |
+| `format` | enum | json | `json` 为 JSONL（由 bridge 逐行解析）；`default` 为纯文本 |
 | `approval` | enum | auto | `auto` / `manual` / `full` / `none` |
 | `thinking` | bool | false | 输出思考块 |
 | `title` | string | - | 会话标题 |
 | `cwd` | string | 环境变量 | 工作目录 |
 | `timeout_seconds` | number | 900 | 硬超时，超时直接 SIGKILL |
 
-返回结构（文本内 JSON）：
+### 输出是 JSONL，不是单个 JSON
+
+`codearts run --format json` 输出的是 **NDJSON（每行一个事件）**，不是单个 JSON 对象：
+
+```jsonl
+{"type":"session","sessionId":"ses_..."}
+{"type":"message","role":"assistant","content":[{"type":"text","text":"收到"}]}
+{"type":"result","ok":true,"text":"收到"}
+```
+
+对整段 stdout 做 `JSON.parse` 必然失败。bridge 逐行解析并聚合，返回结构（文本内 JSON）：
 
 ```json
 {
   "ok": true,
   "exitCode": 0,
   "timedOut": false,
-  "elapsedMs": 12345,
+  "elapsedMs": 11200,
   "command": "codearts run ... --format json --auto_approval",
-  "output": { "...": "codearts 的原始 JSON" }
+  "format": "jsonl",
+  "sessionId": "ses_...",
+  "text": "收到",
+  "eventCount": 3,
+  "events": [{ "type": "session" }, { "type": "message" }, { "type": "result" }]
 }
 ```
+
+- `sessionId` 自动从事件中提取，可直接作为下一次 `session_id` 续接，不需要自己解析。
+- `text` 取最后一段 assistant / result 文本，适合直接展示。
+- `events` 超过 `CODEARTS_MAX_EVENT_BYTES`（默认 200000 字符）时替换为 `{truncated, total, sizeBytes, tail}`。
+- 只有一条事件时额外保留 `output` 兼容旧用法；`format: "default"` 时 `output` 为原始文本。
+- 无法解析的行计入 `invalidLines`，不会让整个调用失败。
+
+### stdin 必须关闭（bridge 已内置）
+
+bridge 这样启动 CLI：
+
+```js
+spawn(BIN, args, { stdio: ["ignore", "pipe", "pipe"] })
+```
+
+原因是 CLI 的 stdin 如果是**打开的管道**，它会等待 EOF，表现为“直连 11 秒就出结果，经 bridge 却挂到 300 秒超时”。设为 `ignore` 后 stdin 直接是 `/dev/null`，立即 EOF。
+
+如果你自己封装 CLI，务必显式关闭 stdin，不要保留打开的管道。
 
 失败时额外带 `error` 与 `stderr` 尾部 4KB。
 
@@ -231,6 +263,7 @@ codearts run --attach http://127.0.0.1:4096 --password "$CODEARTS_SERVER_PASSWOR
 | `CODEARTS_SERVER_PASSWORD` | 空 | serve 密码 |
 | `CODEARTS_MAX_CONCURRENT` | `2` | 并发上限，超出排队 |
 | `CODEARTS_TIMEOUT_SECONDS` | `900` | 默认超时 |
+| `CODEARTS_MAX_EVENT_BYTES` | `200000` | JSONL 事件返回上限，超出则截断为 tail |
 
 并发上限建议保持 `1~2`：码道任务是重推理任务，并发过高只会互相拖慢并放大成本。
 

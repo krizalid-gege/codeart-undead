@@ -28,23 +28,37 @@ if (args[0] === "run") {
     promptParts.push(arg);
   }
   const prompt = promptParts.join(" ");
+
   if (joined.includes("--emit-failure")) {
     process.stderr.write("mock failure\n");
     process.exit(2);
   }
-  if (args.includes("--format") && args[args.indexOf("--format") + 1] === "json") {
-    out({
-      ok: true,
-      mock: true,
-      prompt,
-      sessionId: "ses_mock_1",
-      args
+
+  const jsonMode = args.includes("--format") && args[args.indexOf("--format") + 1] === "json";
+
+  const emit = () => {
+    if (jsonMode) {
+      out({ type: "session", sessionId: "ses_mock_1" });
+      out({ type: "message", role: "assistant", content: [{ type: "text", text: "收到" }] });
+      out({ type: "result", ok: true, text: "收到", prompt });
+    } else {
+      process.stdout.write(`mock answer for: ${prompt}\n`);
+    }
+    process.exit(0);
+  };
+
+  if (process.env.MOCK_WAIT_STDIN === "1") {
+    const deadline = setTimeout(emit, 60000);
+    process.stdin.resume();
+    process.stdin.on("data", () => {});
+    process.stdin.on("end", () => {
+      clearTimeout(deadline);
+      emit();
     });
   } else {
-    process.stdout.write(`mock answer for: ${prompt}\n`);
+    emit();
   }
-  process.exit(0);
+} else {
+  process.stderr.write(`mock codearts: unsupported args ${joined}\n`);
+  process.exit(3);
 }
-
-process.stderr.write(`mock codearts: unsupported args ${joined}\n`);
-process.exit(3);

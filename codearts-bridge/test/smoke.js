@@ -9,7 +9,7 @@ const serverEntry = path.resolve(here, "..", "bin", "codearts-mcp.js");
 const mockBin = path.resolve(here, "mock-codearts.js");
 
 const child = spawn(process.execPath, [serverEntry], {
-  env: { ...process.env, CODEARTS_BIN: mockBin },
+  env: { ...process.env, CODEARTS_BIN: mockBin, MOCK_WAIT_STDIN: "1" },
   stdio: ["pipe", "pipe", "pipe"]
 });
 
@@ -53,19 +53,29 @@ async function main() {
     clientInfo: { name: "smoke", version: "0" }
   });
   assert.equal(init.result.serverInfo.name, "codearts-bridge");
+  assert.equal(init.result.serverInfo.version, "1.1.0");
 
   const list = await request("tools/list", {});
   const names = list.result.tools.map((t) => t.name);
   assert.deepEqual(names.sort(), ["codearts_health", "codearts_run", "codearts_session_list"]);
 
+  const startedAt = Date.now();
   const call = await request("tools/call", {
     name: "codearts_run",
     arguments: { prompt: "读 README 并总结", approval: "auto", format: "json" }
   });
+  const elapsed = Date.now() - startedAt;
   assert.equal(call.result.isError, false);
+  assert.ok(elapsed < 15000, `run should not block on stdin, took ${elapsed}ms`);
+
   const payload = JSON.parse(call.result.content[0].text);
   assert.equal(payload.ok, true);
-  assert.equal(payload.output.prompt, "读 README 并总结");
+  assert.equal(payload.sessionId, "ses_mock_1");
+  assert.equal(payload.text, "收到");
+  assert.equal(payload.eventCount, 3);
+  assert.ok(Array.isArray(payload.events));
+  assert.equal(payload.events[0].type, "session");
+  assert.equal(payload.format, "jsonl");
   assert.ok(payload.command.includes("--auto_approval"));
 
   const fail = await request("tools/call", {
@@ -73,18 +83,23 @@ async function main() {
     arguments: { prompt: "--emit-failure", approval: "auto" }
   });
   assert.equal(fail.result.isError, true);
+  assert.match(JSON.parse(fail.result.content[0].text).stderr, /mock failure/);
 
   const health = await request("tools/call", { name: "codearts_health", arguments: {} });
   assert.equal(health.result.isError, false);
-  assert.equal(JSON.parse(health.result.content[0].text).version, "codearts 9.9.9-mock");
+  const healthPayload = JSON.parse(health.result.content[0].text);
+  assert.equal(healthPayload.version, "codearts 9.9.9-mock");
+  assert.equal(healthPayload.stdinMode, "ignore");
 
   const sessions = await request("tools/call", {
     name: "codearts_session_list",
     arguments: { format: "json", max_count: 5 }
   });
   assert.equal(sessions.result.isError, false);
+  const sessionsPayload = JSON.parse(sessions.result.content[0].text);
+  assert.equal(sessionsPayload.output[0].sessionId, "ses_mock_1");
 
-  console.log("smoke: all checks passed");
+  console.log(`smoke: all checks passed (run took ${elapsed}ms)`);
   child.kill();
 }
 

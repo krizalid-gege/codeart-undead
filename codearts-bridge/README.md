@@ -14,6 +14,14 @@
 | 码道**不能作为 MCP Server** 被直接挂载 | 所以需要本项目的 bridge：把 CLI 包成 MCP tool |
 | 官方集成面只有 CLI：`codearts run` / `codearts serve` / `codearts attach` | bridge 的全部能力都建立在这三个命令上 |
 | `codearts run` 是**进程级调用** | 冷启动较慢，长期高频调用必须用 `serve + attach` |
+| **不需要预先准备沙箱** | `approval: auto/manual` 用的是 CLI 内置隔离，与你自己的机器或华为云持久化沙箱无关 |
+
+### 常见误解
+
+- ❌ “调用码道要先开一个华为云沙箱 / 挂域名隧道” → 不需要。MCP 走 stdio，进程随客户端启动。
+- ❌ “没有公网 IP 就调不了” → 只要能访问华为云即可，不需要入站端口。
+- ❌ “必须用 `full_access` 才能跑” → 恰恰相反，无人值守用 `auto`，`full_access` 只用于一次性隔离容器。
+- ✅ 真正的前置条件只有三个：CLI 已安装、已授权、有套餐积分。
 
 架构：
 

@@ -238,7 +238,64 @@ codearts run --attach http://127.0.0.1:4096 --password "$CODEARTS_SERVER_PASSWOR
 
 ## 7. 无人值守的正确姿势
 
-### 7.1 审批模式
+### 7.1 三层权限与文件夹信任（必须先配）
+
+凭据通过 ≠ 能跑任务。码道 CLI 有三层拦截，MCP 场景三层都必须配好：
+
+| 层 | 作用 | 配置位置 | CLI 模式默认 |
+|---|---|---|---|
+| 1. 文件夹信任 | 是否信任工作目录及子目录 | `~/.codeartsdoer/cli-data/settings.json` | 受限，会拦截 |
+| 2. 执行权限 | bash / 目录外读写 / 点文件 | `~/.codeartsdoer/cli-data/storage/permission/global.json` | **自动禁止** |
+| 3. 会话审批 | `--auto_approval` 等 | bridge 的 `approval` 参数 | 由 bridge 传入 |
+
+**第 1 层：文件夹信任**
+
+- Windows：`%USERPROFILE%\.codeartsdoer\cli-data\settings.json`
+- Linux / macOS：`~/.codeartsdoer/cli-data/settings.json`
+
+```json
+{ "enabled": false }
+```
+
+`enabled` 指“受限使用模式”，改成 `false` 才是信任该目录及其所有子目录和工作区文件。交互式可以在提示页选“信任此文件夹”，但 MCP 无人值守只能改配置。
+
+**第 2 层：执行权限**
+
+`~/.codeartsdoer/cli-data/storage/permission/global.json`
+
+```json
+[
+  { "permission": "bash", "pattern": "*", "action": "allow" },
+  { "permission": "external_directory_read", "pattern": "*", "action": "allow" },
+  { "permission": "external_directory_write", "pattern": "*", "action": "ask" },
+  { "permission": "dotfile", "pattern": "*", "action": "ask" }
+]
+```
+
+策略：`allow` 直接执行、`ask` 等审批、`deny` 禁止。**无人值守不能用 `ask`**，否则任务会挂起等人。更稳妥的是按需白名单，例如只放行 `git *`、`npm *`、`python *`。
+
+**bash 执行模式**
+
+`~/.codeartsdoer/cli-data/storage/permission/config.json`
+
+```json
+{ "bash_mode": "sandbox" }
+```
+
+取值：`sandbox`（默认，最安全）、`always_ask`、`always_allow`。`always_allow` 等于完全放开，仅限一次性容器。
+
+**生效条件**：三层配置只在 CLI 启动时读取。改完必须重启 bridge（即重启 DSH 的 MCP 客户端），否则旧进程仍用旧配置。
+
+验证：
+
+```bash
+codearts debug config
+codearts run "执行 ls 并返回结果" --format json --auto_approval
+```
+
+返回命令输出而不是“是否信任此文件夹”，说明三层都通了。
+
+### 7.2 审批模式
 
 | 值 | 行为 | 用在 |
 |---|---|---|
@@ -249,20 +306,20 @@ codearts run --attach http://127.0.0.1:4096 --password "$CODEARTS_SERVER_PASSWOR
 
 永远不要把 `full` 当默认值。
 
-### 7.2 超时与重试
+### 7.3 超时与重试
 
 - 单次任务默认 900 秒；长构建类任务显式传 `timeout_seconds: 1800`。
 - 重试策略：**只重试可重试错误**（网络抖动、attach 连接断开、`timedOut: false` 且 exitCode 非 0 的临时失败）。
 - 超时（`timedOut: true`）不要原样重试，先查是不是任务本身太重，拆分后再跑。
 - 建议退避：30s → 120s → 300s，最多 3 次。
 
-### 7.3 进程守护
+### 7.4 进程守护
 
 - `codearts serve` 用 systemd / launchd / supervisor 托管，`Restart=always`。
 - bridge 本身由 MCP 客户端托管，不要额外常驻。
 - 日志：serve 输出重定向到文件并做轮转；bridge 的日志只写 stderr（stdout 是协议通道，不能污染）。
 
-### 7.4 每日巡检
+### 7.5 每日巡检
 
 ```bash
 codearts run --attach "$CODEARTS_ATTACH_URL" --password "$CODEARTS_SERVER_PASSWORD" \

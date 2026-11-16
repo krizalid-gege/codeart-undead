@@ -1,0 +1,20 @@
+[Unit]
+Description=CodeArts Agent headless server (codearts serve)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=codearts
+WorkingDirectory=/srv/codearts
+EnvironmentFile=/etc/codearts/serve.env
+ExecStart=/usr/local/bin/codearts serve
+Restart=always
+RestartSec=10
+StandardOutput=append:/var/log/codearts/serve.log
+StandardError=append:/var/log/codearts/serve.log
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

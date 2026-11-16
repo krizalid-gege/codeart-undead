@@ -1,0 +1,17 @@
+{
+  "name": "codearts-bridge",
+  "version": "1.0.0",
+  "description": "Zero-dependency MCP server that exposes CodeArts Agent CLI (codearts run) as tools",
+  "type": "module",
+  "bin": {
+    "codearts-mcp": "bin/codearts-mcp.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "start": "node bin/codearts-mcp.js",
+    "test": "node test/smoke.js"
+  },
+  "license": "MIT"
+}

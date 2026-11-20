@@ -63,7 +63,7 @@ async function main() {
     clientInfo: { name: "aggregate", version: "0" }
   });
   assert.equal(init.result.serverInfo.name, "codearts-bridge");
-  assert.equal(init.result.serverInfo.version, "1.2.0");
+  assert.equal(init.result.serverInfo.version, "1.2.1");
 
   const list = await request("tools/list", {});
   const names = list.result.tools.map((tool) => tool.name).sort();

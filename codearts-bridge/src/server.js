@@ -3,7 +3,7 @@ import { createInterface } from "node:readline";
 import { Gateway, loadUpstreamConfigs } from "./gateway.js";
 
 const SERVER_NAME = "codearts-bridge";
-const SERVER_VERSION = "1.2.0";
+const SERVER_VERSION = "1.2.1";
 let gateway = null;
 const DEFAULT_PROTOCOL = "2025-06-18";
 const MAX_EVENT_BYTES = Number(process.env.CODEARTS_MAX_EVENT_BYTES || 200000);

@@ -447,3 +447,11 @@ npm test
 - [授权（网页 / AK-SK）](https://support.huaweicloud.com/usermanual-cli/codeartsagent_cli_0026.html)
 - [安装](https://support.huaweicloud.com/usermanual-cli/codeartsagent_cli_0005.html)
 - [码道 CLI 定时任务](https://support.huaweicloud.com/usermanual-cli/codeartsagent_cli_00021.html)
+
+---
+
+## 12. 相关文档
+
+- [antigravity 接入手册](../docs/ANTIGRAVITY.md)
+- [操作手册](../docs/OPERATIONS.md)
+- [版本变更记录](../CHANGELOG.md)

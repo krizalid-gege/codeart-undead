@@ -1,5 +1,7 @@
 # codeart-undead
 
+> 当前版本：1.2.1（版本记录见 [CHANGELOG.md](CHANGELOG.md)）
+
 把华为云码道（CodeArts Agent）封装成**任意 agent 都能直接调用的 MCP 网关**。
 
 你的 agent 通过标准 MCP 协议（stdio + JSON-RPC）调用码道；网关还可聚合任意上游 MCP Server（如 PCB 审核），对外只暴露一个入口。
@@ -96,4 +98,9 @@ MCP_UPSTREAMS=[{"name":"pcb","command":"python3","args":["/abs/pcb-review-kit/mc
 
 聚合层不改变这个边界：它只是让同一个入口同时提供码道工具与上游 MCP 工具，不绕过 CLI。
 
-完整用法、长期调用方案、审批模式、错误处理见 [codearts-bridge/README.md](codearts-bridge/README.md)。
+## 文档
+
+- [版本变更记录](CHANGELOG.md)
+- [antigravity 接入手册](docs/ANTIGRAVITY.md)
+- [操作手册](docs/OPERATIONS.md)
+- [codearts-bridge 详细手册](codearts-bridge/README.md)

@@ -1,8 +1,10 @@
 import { spawn } from "node:child_process";
 import { createInterface } from "node:readline";
+import { Gateway, loadUpstreamConfigs } from "./gateway.js";
 
 const SERVER_NAME = "codearts-bridge";
-const SERVER_VERSION = "1.1.0";
+const SERVER_VERSION = "1.2.0";
+let gateway = null;
 const DEFAULT_PROTOCOL = "2025-06-18";
 const MAX_EVENT_BYTES = Number(process.env.CODEARTS_MAX_EVENT_BYTES || 200000);
 
@@ -261,6 +263,7 @@ async function toolHealth(input = {}) {
     defaultTimeoutSeconds: DEFAULT_TIMEOUT,
     stdinMode: "ignore",
     outputFormat: "jsonl",
+    upstreams: gateway ? gateway.status() : [],
     version: result.stdout || null
   };
   if (!result.ok) {
@@ -316,6 +319,9 @@ const TOOLS = [
   }
 ];
 
+const LOCAL_TOOL_NAMES = new Set(TOOLS.map((tool) => tool.name));
+gateway = new Gateway(loadUpstreamConfigs());
+
 function send(message) {
   process.stdout.write(JSON.stringify(message) + "\n");
 }
@@ -355,9 +361,24 @@ async function handleMessage(message) {
     });
   }
   if (method === "ping") return reply(id, {});
-  if (method === "tools/list") return reply(id, { tools: TOOLS });
+  if (method === "tools/list") {
+    const { tools } = await gateway.listTools(TOOLS);
+    return reply(id, { tools });
+  }
   if (method === "tools/call") {
+    const name = params && params.name;
     try {
+      if (!LOCAL_TOOL_NAMES.has(name)) {
+        if (!gateway.has(name)) await gateway.listTools(TOOLS);
+        if (!gateway.has(name)) {
+          return reply(id, {
+            content: [{ type: "text", text: JSON.stringify({ ok: false, error: `unknown tool: ${name}` }) }],
+            isError: true
+          });
+        }
+        const upstream = await gateway.call(name, (params && params.arguments) || {});
+        return reply(id, upstream);
+      }
       const result = await handleCall(params);
       return reply(id, {
         content: [{ type: "text", text: result.text }],
@@ -375,6 +396,28 @@ async function handleMessage(message) {
 }
 
 export async function start() {
+  if (gateway) {
+    gateway.init().catch((err) => {
+      process.stderr.write(`codearts-bridge: upstream init error ${err && err.message ? err.message : err}\n`);
+    });
+    const shutdown = () => {
+      try {
+        gateway.close();
+      } catch {
+        /* ignore */
+      }
+      process.exit(0);
+    };
+    process.on("SIGINT", shutdown);
+    process.on("SIGTERM", shutdown);
+    process.on("exit", () => {
+      try {
+        gateway.close();
+      } catch {
+        /* ignore */
+      }
+    });
+  }
   const rl = createInterface({ input: process.stdin, crlfDelay: Infinity });
   rl.on("line", (line) => {
     const trimmed = line.trim();

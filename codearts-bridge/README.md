@@ -119,6 +119,46 @@ node bin/codearts-mcp.js   # 能启动（等待 stdin）即安装成功
 
 密码不要硬编码进仓库，用你的密钥管理或宿主环境变量注入。
 
+### 3.3 聚合上游 MCP Server（网关模式）
+
+bridge 除了暴露码道工具，还能作为 MCP **客户端**连接任意上游 MCP Server，把其工具合并进同一入口。适合"一个 agent 同时要码道 + 专用工具（如 PCB 审核）"。
+
+配置（`MCP_UPSTREAMS`，JSON 数组，可多个）：
+
+```json
+{
+  "mcpServers": {
+    "codearts": {
+      "command": "node",
+      "args": ["/absolute/path/to/codearts-bridge/bin/codearts-mcp.js"],
+      "env": {
+        "CODEARTS_WORKDIR": "/absolute/path/to/project",
+        "MCP_UPSTREAMS": "[{\"name\":\"pcb\",\"command\":\"python3\",\"args\":[\"/abs/pcb-review-kit/mcp_server.py\"],\"env\":{\"PCB_REVIEW_ROOT\":\"/abs/project\"},\"callTimeoutMs\":60000}]"
+      }
+    }
+  }
+}
+```
+
+也可用简化变量（单个 PCB 审核上游）：
+
+```
+PCB_REVIEW_MCP=/abs/pcb-review-kit/mcp_server.py
+PCB_REVIEW_PYTHON=python3
+PCB_REVIEW_ROOT=/abs/project
+```
+
+规则：
+
+- 上游工具名与本地冲突时自动加 `<name>_` 前缀；
+- 上游启动失败只影响其自身工具，`codearts_*` 仍可用；
+- `codearts_health` 返回 `upstreams` 状态（ready/error/toolCount），agent 启动先查；
+- 上游进程随 bridge 退出而结束（SIGINT/SIGTERM 会清理）。
+
+安全：`MCP_UPSTREAMS` 等价于"允许 bridge 启动这些子进程"，只配置可信 server，不要把外部输入直接拼进去。
+
+验证：`npm test` 中的 `test/aggregate.js` 会用 `test/mock-upstream.js` 完整跑一遍"聚合 + 转发"。
+
 ---
 
 ## 4. 三种长期调用模式

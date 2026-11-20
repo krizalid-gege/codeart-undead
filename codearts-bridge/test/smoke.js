@@ -53,7 +53,7 @@ async function main() {
     clientInfo: { name: "smoke", version: "0" }
   });
   assert.equal(init.result.serverInfo.name, "codearts-bridge");
-  assert.equal(init.result.serverInfo.version, "1.2.1");
+  assert.equal(init.result.serverInfo.version, "1.2.2");
 
   const list = await request("tools/list", {});
   const names = list.result.tools.map((t) => t.name);

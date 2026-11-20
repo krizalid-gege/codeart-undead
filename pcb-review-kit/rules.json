@@ -1,0 +1,49 @@
+{
+  "version": "1.0",
+  "description": "PCB 静态审核规则库。供 pcb_review.py 使用，也可直接给外部 agent(Gemini) 阅读自查。",
+  "severity_order": ["critical", "high", "medium", "low", "info", "review"],
+  "severity_meaning": {
+    "critical": "必然导致功能失效/安全风险，必须改",
+    "high": "原则性问题，投板前必须整改或书面确认",
+    "medium": "明显风险，建议整改",
+    "low": "规范性建议",
+    "info": "布局/DFM 提示",
+    "review": "设计意图缺失，需提供 design_meta 或人工确认，不能自动判定"
+  },
+  "standards": {
+    "IPC-2221": "Generic PCB design standard (current capacity, electrical spacing)",
+    "IPC-2222": "Sectional design standard for rigid organic PCBs",
+    "IPC-A-610": "Acceptability of electronic assemblies",
+    "IEC-62368-1": "Audio/video, IT and communication equipment safety",
+    "IEC-60950-1": "IT equipment safety (legacy)",
+    "IPC-7351": "Land pattern / footprint"
+  },
+  "rules": [
+    {"id": "STACK-01", "category": "stackup", "severity": "high", "title": "层叠铜厚/介质厚度未定义", "standard": "IPC-2221", "guide": "在 Altium Layer Stack Manager 中补齐每层铜厚与介质厚度，明确板厚与总叠构"},
+    {"id": "STACK-02", "category": "stackup", "severity": "high", "title": "多层板无内层地/电源平面", "standard": "IPC-2222", "guide": "至少保留一层完整 GND 平面，电源优先用厚铜/铜排；差分与高速信号需连续参考平面"},
+    {"id": "STACK-03", "category": "stackup", "severity": "medium", "title": "外层铜厚偏薄（大电流场景）", "standard": "IPC-2221", "guide": "大电流背板建议外层 2oz 及以上，或主载流走铜排"},
+    {"id": "SAFE-01", "category": "safety", "severity": "high", "title": "爬电距离规则未启用", "standard": "IEC-62368-1", "guide": "启用 Creepage 规则并按工作电压设置最小爬电距离，AC 区单独设 Scope"},
+    {"id": "SAFE-02", "category": "safety", "severity": "high", "title": "缺少 AC 高压区专用间距规则", "standard": "IEC-62368-1", "guide": "为一次侧/高压区建立独立 Clearance/Creepage 规则类（如 >=3mm，按电压等级选取）"},
+    {"id": "SAFE-03", "category": "safety", "severity": "high", "title": "AC 端子无 L/N/PE/相序丝印", "standard": "IPC-A-610", "guide": "在 AC 端子旁增加 L/N/PE(或 AC_L/AC_N/PE)、电压、极性、危险警告丝印"},
+    {"id": "SAFE-04", "category": "safety", "severity": "high", "title": "高压母线电容无泄放路径", "standard": "IEC-62368-1", "guide": "增加泄放电阻/主动放电，确保断电后在安全时间内降到安全电压或能量阈值以下"},
+    {"id": "SAFE-05", "category": "safety", "severity": "medium", "title": "AC 输入无保险丝/浪涌保护", "standard": "IEC-62368-1", "guide": "确认保护在模块内还是背板；背板建议加总保险丝、压敏/TVS、共模与 X/Y 电容"},
+    {"id": "SAFE-06", "category": "safety", "severity": "high", "title": "保护地/PE 连接未确认", "standard": "IEC-62368-1", "guide": "确认 PE、机壳、安装孔、输出负极、信号地的单点接地关系"},
+    {"id": "PWR-01", "category": "power", "severity": "high", "title": "PCB 走线载流能力不足/需核算", "standard": "IPC-2221", "guide": "按实际电流加大线宽/铜厚，或改为铜排/厚铜汇流；多过孔并联"},
+    {"id": "PWR-02", "category": "power", "severity": "review", "title": "铜排/焊盘载流需核算", "standard": "IPC-2221", "guide": "按铜排截面积、焊盘尺寸、螺钉/焊接方式核算温升与接触电阻"},
+    {"id": "PWR-03", "category": "power", "severity": "medium", "title": "高频去耦不足", "standard": "IPC-2222", "guide": "每个模块/连接器电源入口就近增加 0.1uF 陶瓷电容"},
+    {"id": "PWR-04", "category": "power", "severity": "review", "title": "过孔载流需核算", "standard": "IPC-2221", "guide": "电源换层处使用多孔并联或加大孔径"},
+    {"id": "SIG-01", "category": "signal", "severity": "medium", "title": "高速/差分信号无参考平面", "standard": "IPC-2222", "guide": "为 RJ45/差分/时钟信号提供连续参考平面并做阻抗控制"},
+    {"id": "SIG-02", "category": "signal", "severity": "review", "title": "通讯总线拓扑/上拉/隔离未确认", "standard": "IPC-2222", "guide": "确认 SCL/SDA 上拉、总线电容、地址分配、终端与隔离"},
+    {"id": "DFM-01", "category": "dfm", "severity": "medium", "title": "板长超长（>500mm）", "standard": "IPC-A-610", "guide": "确认产线设备尺寸、长板翘曲与传送适配"},
+    {"id": "DFM-02", "category": "dfm", "severity": "medium", "title": "缺 Mark 点（SMT 贴装）", "standard": "IPC-A-610", "guide": "在板边或对角增加光学定位 Mark 点，并保留工艺边"},
+    {"id": "DFM-03", "category": "dfm", "severity": "info", "title": "多路同型号连接器无防呆", "standard": "IPC-A-610", "guide": "增加 keying/防呆或强制丝印，避免模块插错槽位"},
+    {"id": "DFM-04", "category": "dfm", "severity": "info", "title": "长板支撑/拼板/翘曲风险", "standard": "IPC-A-610", "guide": "评估增加加强筋、支撑点或拼板方向"},
+    {"id": "DFM-05", "category": "dfm", "severity": "info", "title": "存在直角/锐角走线", "standard": "IPC-2222", "guide": "高速/EMC 敏感信号改为 45 度或圆弧；低频电源走线可接受"},
+    {"id": "FUNC-01", "category": "function", "severity": "review", "title": "多路 AC 是否同源未确认", "standard": "IEC-62368-1", "guide": "确认多路 AC 是否同相/同源；不同相并联需评估环流与缺相"},
+    {"id": "FUNC-02", "category": "function", "severity": "review", "title": "并联均流/SENSE 拓扑未确认", "standard": "IPC-2222", "guide": "确认 load-share、SENSE、I_PROG/V_PROG 为单点、等长、对称接入"},
+    {"id": "FUNC-03", "category": "function", "severity": "review", "title": "输出防反灌未确认", "standard": "IPC-2222", "guide": "确认某路模块失电时不会被其余模块反灌，必要时加 ORing"},
+    {"id": "FUNC-04", "category": "function", "severity": "high", "title": "热插拔保护未确认", "standard": "IPC-2222", "guide": "热插拔需长短针分级(先 PE/GND，再电源，最后信号)+预充/软启动"},
+    {"id": "DRC-01", "category": "drc", "severity": "critical", "title": "DRC 报告存在错误", "standard": "IPC-2221", "guide": "按 DRC 报告逐条修复，直至 0 error"},
+    {"id": "META-00", "category": "meta", "severity": "review", "title": "未提供 design_meta", "standard": "-", "guide": "提供 design_meta.json 以量化载流/安规/功能类规则"}
+  ]
+}

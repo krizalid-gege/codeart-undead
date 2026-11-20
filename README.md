@@ -1,6 +1,6 @@
 # codeart-undead
 
-> 当前版本：1.2.1（版本记录见 [CHANGELOG.md](CHANGELOG.md)）
+> 当前版本：1.2.2（版本记录见 [CHANGELOG.md](CHANGELOG.md)）
 
 把华为云码道（CodeArts Agent）封装成**任意 agent 都能直接调用的 MCP 网关**。
 
@@ -16,6 +16,12 @@ codearts-bridge/     MCP 网关（零依赖，Node >= 18）
   test/                    smoke（本地）+ aggregate（聚合）测试
   deploy/                  codearts serve 的 systemd 托管示例
   README.md                使用手册（给 agent 和集成方看）
+pcb-review-kit/      PCB 审核模块（可选上游，Python）
+  mcp_server.py            MCP Server
+  pcb_review.py            解析 + 规则引擎
+  rules.json               规则库
+  design_meta.example.json 输入模板
+  README.md                模块说明
 ```
 
 ## 不需要什么

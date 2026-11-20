@@ -71,7 +71,7 @@
 或用通用方式（可接多个上游）：
 
 ```
-MCP_UPSTREAMS=[{"name":"pcb","command":"/abs/python3","args":["/abs/pcb-review-kit/mcp_server.py"],"env":{"PCB_REVIEW_ROOT":"/abs/project"},"callTimeoutMs":60000}]
+MCP_UPSTREAMS=[{"name":"pcb","command":"/abs/python3","args":["/abs/codeart-undead/pcb-review-kit/mcp_server.py"],"env":{"PCB_REVIEW_ROOT":"/abs/project"},"callTimeoutMs":60000}]
 ```
 
 聚合后对外工具集（共 7 个）：

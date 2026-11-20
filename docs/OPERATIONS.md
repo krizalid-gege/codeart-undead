@@ -110,7 +110,7 @@ codearts --version
       "env": {
         "CODEARTS_WORKDIR": "/abs/project",
         "CODEARTS_BIN": "/abs/codearts",
-        "PCB_REVIEW_MCP": "/abs/pcb-review-kit/mcp_server.py",
+        "PCB_REVIEW_MCP": "/abs/codeart-undead/pcb-review-kit/mcp_server.py",
         "PCB_REVIEW_PYTHON": "/abs/python3",
         "PCB_REVIEW_ROOT": "/abs/project"
       }
@@ -122,7 +122,7 @@ codearts --version
 通用多上游：
 
 ```
-MCP_UPSTREAMS=[{"name":"pcb","command":"/abs/python3","args":["/abs/pcb-review-kit/mcp_server.py"],"env":{"PCB_REVIEW_ROOT":"/abs/project"},"callTimeoutMs":60000}]
+MCP_UPSTREAMS=[{"name":"pcb","command":"/abs/python3","args":["/abs/codeart-undead/pcb-review-kit/mcp_server.py"],"env":{"PCB_REVIEW_ROOT":"/abs/project"},"callTimeoutMs":60000}]
 ```
 
 ### 5.3 环境变量

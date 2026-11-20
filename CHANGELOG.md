@@ -2,6 +2,22 @@
 
 本项目的所有重要变更记录在此。格式参考 Keep a Changelog，版本遵循 SemVer。
 
+## [1.2.2] - 2026-11-20
+
+### Added
+
+- `pcb-review-kit/`：PCB 静态规则审核模块（MCP Server + CLI + 规则库 + 输入模板），作为可选上游。
+- `pcb-review-kit/README.md`：模块说明与接入方式。
+
+### Changed
+
+- 根 `README.md`、`docs/ANTIGRAVITY.md`、`docs/OPERATIONS.md` 中的 PCB 上游路径改为仓库内 `pcb-review-kit/mcp_server.py`。
+- 版本升至 `1.2.2`。
+
+### Fixed
+
+- 修复文档引用了仓库中不存在的 `pcb-review-kit` 目录的问题。
+
 ## [1.2.1] - 2026-11-20
 
 ### Added

@@ -97,7 +97,7 @@ class UpstreamClient {
         {
           protocolVersion: DEFAULT_PROTOCOL,
           capabilities: {},
-          clientInfo: { name: "codearts-bridge", version: "1.2.2" }
+          clientInfo: { name: "codearts-bridge", version: "1.3.0" }
         },
         this.config.initTimeoutMs
       );

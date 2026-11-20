@@ -1,6 +1,6 @@
 # codeart-undead
 
-> 当前版本：1.2.2（版本记录见 [CHANGELOG.md](CHANGELOG.md)）
+> 当前版本：1.3.0（版本记录见 [CHANGELOG.md](CHANGELOG.md)）
 
 把华为云码道（CodeArts Agent）封装成**任意 agent 都能直接调用的 MCP 网关**。
 
@@ -21,6 +21,13 @@ pcb-review-kit/      PCB 审核模块（可选上游，Python）
   pcb_review.py            解析 + 规则引擎
   rules.json               规则库
   design_meta.example.json 输入模板
+  README.md                模块说明
+step-review-kit/     STEP 3D 结构审阅模块（可选上游，Python）
+  mcp_server.py            MCP Server
+  step_review.py           解析 + 几何/检查引擎
+  run_step_mcp.sh          MCP 启动封装
+  run_step_review.sh       CLI 封装
+  bootstrap_libgl.sh       无 root libGL 引导（可选）
   README.md                模块说明
 ```
 

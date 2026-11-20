@@ -140,6 +140,8 @@ MCP_UPSTREAMS=[{"name":"pcb","command":"/abs/python3","args":["/abs/codeart-unde
 | `PCB_REVIEW_MCP` | 空 | 简化：单个 PCB 审核上游脚本 |
 | `PCB_REVIEW_PYTHON` | `python3` | 简化：上游 Python |
 | `PCB_REVIEW_ROOT` | 当前目录 | 简化：上游允许读取的根目录 |
+| `STEP_LD_LIBRARY_PATH` | 空 | STEP 上游的 libGL stub / libglvnd 路径 |
+| `STEP_REVIEW_ROOT` | 空 | STEP 上游允许读取的根目录 |
 
 ---
 

@@ -2,6 +2,19 @@
 
 本项目的所有重要变更记录在此。格式参考 Keep a Changelog，版本遵循 SemVer。
 
+## [1.3.0] - 2026-11-20
+
+### Added
+
+- `step-review-kit/`：STEP 3D 结构审阅模块（MCP Server + CLI + 无 root libGL 引导脚本）。
+- MCP 工具：`list_parts`、`review_step`（配合、孔对齐、限高、避让、干涉、最小间隙、壁厚）。
+- `step-review-kit/README.md`：依赖、libGL 处理、CLI/MCP 用法、与 bridge 双上游集成。
+
+### Changed
+
+- 根 `README.md`、`docs/ANTIGRAVITY.md`、`docs/OPERATIONS.md` 增加 STEP 上游接入说明。
+- 版本升至 `1.3.0`。
+
 ## [1.2.2] - 2026-11-20
 
 ### Added

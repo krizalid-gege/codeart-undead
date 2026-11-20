@@ -81,6 +81,19 @@ MCP_UPSTREAMS=[{"name":"pcb","command":"/abs/python3","args":["/abs/codeart-unde
 
 > 上游工具名与本地冲突时，网关自动加 `<name>_` 前缀。
 
+### 3.2 同时聚合 PCB + STEP（可选）
+
+用 `MCP_UPSTREAMS` 一次接入多个上游（此时不要再用 `PCB_REVIEW_MCP`，它只在没有 `MCP_UPSTREAMS` 时生效）：
+
+```
+MCP_UPSTREAMS=[
+ {"name":"pcb","command":"/abs/python3","args":["/abs/codeart-undead/pcb-review-kit/mcp_server.py"],"env":{"PCB_REVIEW_ROOT":"/abs/project"},"callTimeoutMs":60000},
+ {"name":"step","command":"/abs/codeart-undead/step-review-kit/run_step_mcp.sh","args":[],"env":{"STEP_LD_LIBRARY_PATH":"/abs/gltools/stublib:/abs/gltools/glenv/lib","STEP_REVIEW_ROOT":"/abs/project"},"callTimeoutMs":120000}
+]
+```
+
+STEP 上游额外提供：`list_parts`、`review_step`。详见 `step-review-kit/README.md`。
+
 ---
 
 ## 4. 首次验证顺序（建议照做）
